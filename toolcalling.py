@@ -1,23 +1,40 @@
 from dotenv import load_dotenv
 load_dotenv()
 from langchain_mistralai import ChatMistralAI
-from langchain.tools import tool
+from langchain.tools import tool 
+from langchain_core.messages import HumanMessage
+from rich import print 
 
-from rich import print
+#1 creating a tool 
 
-#1 creating a tool
-
+@tool
 def get_text_length(text: str) -> int:
-    """Returns the numbers of characters in the given Text"""
+    """Returns the number of character in a given text"""
     return len(text)
 
-llm = ChatMistralAI(model="mistral-small-2506")
+tools = {
+    "get_text_length" : get_text_length
+}
+llm = ChatMistralAI(model = "mistral-small-2506")
 
-# 2 Tool binding with LLM
+#tool binding 
 llm_with_tool = llm.bind_tools([get_text_length])
 
-result1 = llm.invoke("Hello, my dog is cute")
-print(result1)
+message = []
+prompt = input("You: ")
+query = HumanMessage(prompt)
+message.append(query)
 
-result2 = llm_with_tool.invoke("Hello, my dog is cute. Please tell me the length of this text using the tool.")
-print(result2)
+result = llm_with_tool.invoke(message)
+
+message.append(result)
+
+if result.tool_calls:
+    tool_name = result.tool_calls[0]["name"]
+    tool_message = tools[tool_name].invoke(result.tool_calls[0])
+    message.append(tool_message)
+   
+
+result = llm_with_tool.invoke(message)
+print(result.content)
+
