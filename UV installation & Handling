@@ -1,0 +1,9 @@
+## Initialize Project
+'''uv init'''
+
+## Create Virtual Environment
+uv venv
+.venv\Scripts\activate
+
+## Installation requirements.txt
+uv add -r requirements.txt
